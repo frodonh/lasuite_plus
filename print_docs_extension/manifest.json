@@ -1,0 +1,28 @@
+{
+	"manifest_version": 3,
+	"name": "Print Docs",
+	"version": "1.0",
+	"description": "Une extension pour convertir les fichiers Docs en documents imprimables",
+	"icons": {
+		"48": "print-docs-inactive.svg",
+		"128": "print-docs-inactive.svg"
+	},
+	"action": {
+		"default_icon": "print-docs-inactive.svg",
+		"default_title": "Exporter sous le modèle d'entreprise"
+	},
+	"options_page": "select_css.html",
+	"permissions": ["storage", "activeTab", "scripting", "unlimitedStorage", "tabs"],
+	"host_permissions": ["*://docs.numerique.gouv.fr/docs/*"],
+	"background": {
+		"service_worker": "background.js",
+		"scripts": ["background.js"],
+		"type": "module"
+	},
+	"web_accessible_resources": [
+		{ 
+			"resources": ["paged.polyfill.min.js", "interface.css", "adapter.js", "exported_page.htm"],
+			"matches": ["<all_urls>"]
+		} 
+	]
+}
