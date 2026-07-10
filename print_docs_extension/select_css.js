@@ -54,11 +54,11 @@ document.getElementById("save-btn").addEventListener('click', () => {
 	const newname = document.getElementById("name-input").value;
 	if (current) {
 		delete templates[current.childNodes[1].textContent];
-		current.childNodes[1].textContent = newname;
 	}
 	templates[newname] = textarea.value;
 	chrome.storage.local.set({ custom_css: templates }, () => {
-		create_entry(newname);
+		if (current) current.childNodes[1].textContent = newname;
+		else create_entry(newname);
 	});
 });
 

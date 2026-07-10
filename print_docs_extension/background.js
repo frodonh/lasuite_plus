@@ -27,7 +27,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		});
 		return true;
 	} else if (message.action === 'open_tab') {
-		chrome.tabs.create({url: "exported_page.htm"});
+		chrome.storage.local.get(['custom_css'], (result) => {
+			const modele = (result['custom_css'])? Object.keys(result['custom_css'])[0] : null;
+			const url = "exported_page.htm" + ((modele)?("?modele=" + encodeURIComponent(modele)):'');
+			chrome.tabs.create({url: url});
+		});
 	}
 });
 
