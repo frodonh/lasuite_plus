@@ -1,5 +1,18 @@
 const docs_url = "docs.numerique.gouv.fr/docs";
 
+chrome.runtime.onInstalled.addListener(async (details) => {
+	if (details.reason != chrome.runtime.OnInstalledReason.INSTALL && details.reason != chrome.runtime.OnInstalledReason.UPDATE) return;
+	try {
+		const file_url = chrome.runtime.getURL("base_templates.json");
+		const content = await fetch(file_url);
+		const data = await content.json();
+		for (let key in data) data[key].base = true;
+		await chrome.storage.local.set({custom_css: data});
+	} catch (error) {
+		console.error("Modèles de base introuvables", error);
+	}
+});
+
 chrome.action.onClicked.addListener((tab) => {
 	if (tab.url && tab.url.includes(docs_url)) {
 		chrome.scripting.executeScript({

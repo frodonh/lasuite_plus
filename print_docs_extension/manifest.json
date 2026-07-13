@@ -21,7 +21,7 @@
 	},
 	"web_accessible_resources": [
 		{ 
-			"resources": ["paged.polyfill.min.js", "interface.css", "adapter.js", "exported_page.htm"],
+			"resources": ["paged.polyfill.min.js", "interface.css", "adapter.js", "exported_page.htm", "base_templates.json"],
 			"matches": ["<all_urls>"]
 		} 
 	]

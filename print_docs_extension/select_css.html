@@ -58,14 +58,18 @@
 <body>
 	<h2>Modèles disponibles</h2>
 	<button class="small" id="add-template" title="Ajouter ou importer un modèle"><img src="add.svg"></img></button>
+	<button class="small" id="export-btn" title="Exporter les modèles"><img src="export.svg" /></button>
 	<table id="list-templates"><tbody></tbody></table>
 	<dialog id="edit-template">
 		<label for="name-input">Nom du modèle</label>
 		<input type="text" id="name-input" name="name-input" />
-		<br/>
-		<label for="file-input">Collez votre CSS ci-dessous ou importez un fichier :</label>
-		<input type="file" id="file-input" accept=".css"><br><br>
-		<textarea id="css-code" placeholder="/* Entrez votre CSS ici... */"></textarea><br>
+		<br/><br/>
+		<label for="file-css-input">Collez votre CSS ci-dessous ou importez un fichier :</label>
+		<input type="file" id="file-css-input" data-type="css" accept="text/css"><br>
+		<textarea id="css-code" placeholder="/* Entrez votre CSS ici... */"></textarea><br><br/>
+		<label for="file-html-input">Collez votre HTML ci-dessous ou importez un fichier :</label>
+		<input type="file" id="file-html-input" data-type="html" accept="text/html"><br>
+		<textarea id="html-code" placeholder="/* Entrez votre HTML ici... */"></textarea><br><br/>
 		<button id="save-btn">Sauvegarder</button>
 		<button id="cancel-btn">Annuler</button>
 	</dialog>
