@@ -1,3 +1,9 @@
+chrome.runtime.onMessage.addListener((message, _sender, _response) => {
+	if (message.action == "apply_template") {
+		createTemplatedDocument(message.template);
+	}
+});
+
 function exportTable(element) {
 	if (!element) return "";
 	let table = element.cloneNode(true);
@@ -57,7 +63,6 @@ function exportContent() {
 	let meta = {};
 	// Get the title of the document
 	meta["title"] = [ document.querySelector('span[aria-label="Titre du document"]').innerHTML ];
-	console.log(meta);
 	// Convert the document to plain HTML
 	document.querySelectorAll("div.bn-block-content").forEach(function(it){
 		let typ = it.dataset["contentType"];
@@ -181,18 +186,77 @@ function createToc(html) {
 	return doc.body.innerHTML;
 }
 
-function createTemplatedDocument() {
-	// Create the page
+function createTemplatedDocument(tname) {
+	// Create the content of the page
 	let doc = exportContent();
-	console.log(doc);
 	// Create dynamic content
-	let html = createToc(doc.html);
-	// Open the page
-	chrome.storage.local.set({ html: html, meta: doc.meta },() => {
-		chrome.runtime.sendMessage({action: "open_tab"});
+	doc.html = createToc(doc.html);
+	doc.html = doc.html.replace(/\$\{([^}]*)\}/, (_match, p1, _offset, _string, _groups) => {return doc.meta[p1] || '';})
+	// Read the template and inject it in the document
+	chrome.storage.local.get(['custom_css'], (result) => {
+		const templates = result['custom_css'] || {};
+		const template = templates[tname] || {};
+		// Load the VivlioStyle script
+		fetch(chrome.runtime.getURL('vivliostyle-final.js')).then((response) => {
+			response.text().then((script) => {
+				// Generate the full HTML document
+				let data = '';
+				for (const [key,value] of Object.entries(doc.meta)) {
+					data = data + ` data-${key}="${value}"`;
+				}
+				let html = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<style>body, html, #preview-container { margin: 0; padding: 0; width: 100%; height: 100%;}</style>
+	<title>Prévisualisation du document</title>
+</head>
+<body>
+	<div id="preview-container">
+	</div>
+	<script type="text/html" id="source-html">
+		<!DOCTYPE html>
+		<html lang="fr">
+		<head>
+			<meta charset="UTF-8">
+			<style>${template.css}</style>
+			<title>${doc.meta.title}</title>
+		</head>
+		<body${data}>
+			${template.html}
+			${doc.html}
+		</body>
+		</html>
+	</script>
+	<script>${script}</script>
+	<script>
+		// Create the previewer
+		let container = document.getElementById('preview-container');
+		const viewer = new VivlioStyle.Viewer({
+			renderMode: 'spread',
+			bindWindowKeys: true
+		});
+		viewer.init(container);
+
+		const html = document.getElementById('source-html').textContent;
+
+		// Création du Blob sécurisé local à la sandbox
+		const blob = new Blob([html], { type: 'text/html' });
+		const blobUrl = URL.createObjectURL(blob);
+
+		// Lancement du rendu Vivliostyle
+		viewer.loadDocument(blobUrl)
+			.catch(err => console.error("Erreur de rendu Vivliostyle :", err));
+	</script>
+</body>
+</html>
+				`.trim();
+				// Open a blob URL with the full document
+				const blob = new Blob([html], {type: 'text/html'});
+				window.open(URL.createObjectURL(blob), '_blank');
+			});
+		});
 	});
-	//const blob = new Blob([new_page], {type: "text/html;charset=utf-8"});
-	//window.open(URL.createObjectURL(blob), "_blank");
 }
 
-createTemplatedDocument();

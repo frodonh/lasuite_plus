@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Print Docs",
-	"version": "1.0",
+	"version": "2.0",
 	"description": "Une extension pour convertir les fichiers Docs en documents imprimables",
 	"icons": {
 		"48": "print-docs-inactive.svg",
@@ -9,7 +9,8 @@
 	},
 	"action": {
 		"default_icon": "print-docs-inactive.svg",
-		"default_title": "Exporter sous le modèle d'entreprise"
+		"default_title": "Exporter sous le modèle d'entreprise",
+		"default_popup": "popup.htm"
 	},
 	"options_page": "select_css.html",
 	"permissions": ["storage", "activeTab", "scripting", "unlimitedStorage", "tabs"],
@@ -21,7 +22,7 @@
 	},
 	"web_accessible_resources": [
 		{ 
-			"resources": ["paged.polyfill.min.js", "interface.css", "adapter.js", "exported_page.htm", "base_templates.json"],
+			"resources": ["vivliostyle-final.js", "adapter.js", "exported_page.htm", "base_templates.json"],
 			"matches": ["<all_urls>"]
 		} 
 	]
