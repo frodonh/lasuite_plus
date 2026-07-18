@@ -1,3 +1,19 @@
+chrome.runtime.onMessage.addListener((message, _sender, response) => {
+	if (message.action == "apply_template") {
+		( async () => {
+			let html = await createTemplatedDocument(message.tabid, message.template);
+			if (message.create) {
+				// Open a blob URL with the full document
+				const blob = new Blob([html], {type: 'text/html'});
+				window.open(URL.createObjectURL(blob), '_blank');
+			} else {
+				response(html);
+			}
+		})();
+	}
+	return true;
+});
+
 function exportTable(element) {
 	if (!element) return "";
 	let table = element.cloneNode(true);
@@ -181,18 +197,40 @@ function createToc(html) {
 	return doc.body.innerHTML;
 }
 
-function createTemplatedDocument() {
+async function createTemplatedDocument(tabid, tname) {
 	// Create the page
 	let doc = exportContent();
-	console.log(doc);
 	// Create dynamic content
-	let html = createToc(doc.html);
-	// Open the page
-	chrome.storage.local.set({ html: html, meta: doc.meta },() => {
-		chrome.runtime.sendMessage({action: "open_tab"});
-	});
-	//const blob = new Blob([new_page], {type: "text/html;charset=utf-8"});
-	//window.open(URL.createObjectURL(blob), "_blank");
+	doc.html = createToc(doc.html);
+	doc.html = doc.html.replace(/\$\{([^}]*)\}/, (_match, p1, _offset, _string, _groups) => {return doc.meta[p1] || '';});
+	// Read the template and inject it in the document
+	let result = await chrome.storage.local.get(['custom_css']);
+	const templates = result['custom_css'] || {};
+	const template = templates[tname] || {};
+	let respa = await fetch(chrome.runtime.getURL('paged.polyfill.min.js'));
+	let paged_script = await respa.text();
+	let respc = await fetch(chrome.runtime.getURL('interface.css'));
+	let interface_css = await respc.text();
+	let data = '';
+	for (const [key,value] of Object.entries(doc.meta)) {
+		data = data + ` data-${key}="${value}"`;
+	}
+	const datatab = (tabid)?` data-printdocs="${tabid}"`:"";
+	let html = `
+<!DOCTYPE html>
+<html lang="fr"${datatab}>
+<head>
+	<meta charset="UTF-8">
+	<style>${interface_css}</style>
+	<script defer options="preview: false">${paged_script}</script>
+	<style>${template.css}</style>
+	<title>${doc.meta.title}</title>
+</head>
+<body${data}>
+	${template.html}
+	${doc.html}
+</body>
+</html>
+	`.trim();
+	return html;
 }
-
-createTemplatedDocument();

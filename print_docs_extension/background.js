@@ -17,64 +17,42 @@ chrome.action.onClicked.addListener((tab) => {
 	if (tab.url && tab.url.includes(docs_url)) {
 		chrome.scripting.executeScript({
 			target: { tabId: tab.id },
-		files: ["content.js"]
+			files: ["content.js"]
 		});
 	} else {
 		console.log("L'extension ne fonctionne que sur l'outil Docs de la Suite numérique.");
 	}
 });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-	if (message.action === 'get_template') {
-		chrome.storage.local.get(['custom_css'], (result) => {
-			const templates = result['custom_css'] || {};
-			const css = templates[message.name] || '';
-			sendResponse(css);
-		});
-		return true;
-	} else if (message.action === 'get_templates') {
-		chrome.storage.local.get(['custom_css'], (result) => {
-			const templates = result['custom_css'] || {};
-			const list = Object.keys(templates) || {};
-			sendResponse(list);
-		});
-		return true;
-	} else if (message.action === 'open_tab') {
-		chrome.storage.local.get(['custom_css'], (result) => {
-			const modele = (result['custom_css'])? Object.keys(result['custom_css'])[0] : null;
-			const url = "exported_page.htm" + ((modele)?("?modele=" + encodeURIComponent(modele)):'');
-			chrome.tabs.create({url: url});
-		});
-	}
-});
-
 function setBadge(tab) {
 	if (!tab || !tab.id || !tab.url) return;
-	if (tab.url.includes(docs_url)) {
-		chrome.action.setBadgeText({text: "✓", tabId: tab.id});
-		chrome.action.setBadgeBackgroundColor({color: "#10B981", tabId: tab.id});
-		chrome.action.setBadgeTextColor({color: "#FFFFFF", tabId: tab.id});
-		chrome.action.setIcon({
-			tabId: tab.id,
-			path: {
-				"16": "print-docs.svg",
-				"32": "print-docs.svg",
-				"48": "print-docs.svg",
-				"128": "print-docs.svg"
-			}
-		});
-	} else {
-		chrome.action.setBadgeText({text: "", tabId: tab.id});
-		chrome.action.setIcon({
-			tabId: tab.id,
-			path: {
-				"16": "print-docs-inactive.svg",
-				"32": "print-docs-inactive.svg",
-				"48": "print-docs-inactive.svg",
-				"128": "print-docs-inactive.svg"
-			}
-		});
-	}
+	chrome.scripting.executeScript({
+		target: {tabId: tab.id },
+		func: () => { return document.documentElement.dataset["printdocs"]; }
+	}, (resp) => {
+		const pdid = resp?.[0]?.result;
+		if (tab.url.includes(docs_url) || pdid) {
+			chrome.action.setBadgeText({text: "✓", tabId: tab.id});
+			chrome.action.setBadgeBackgroundColor({color: "#10B981", tabId: tab.id});
+			chrome.action.setBadgeTextColor({color: "#FFFFFF", tabId: tab.id});
+			chrome.action.setIcon({
+				tabId: tab.id,
+				path: {
+					"48": "print-docs-48.png",
+					"128": "print-docs-128.png"
+				}
+			});
+		} else {
+			chrome.action.setBadgeText({text: "", tabId: tab.id});
+			chrome.action.setIcon({
+				tabId: tab.id,
+				path: {
+					"48": "print-docs-inactive-48.png",
+					"128": "print-docs-inactive-128.png"
+				}
+			});
+		}
+	});
 }
 
 chrome.tabs.onUpdated.addListener((tab_id, change_info, tab) => {
