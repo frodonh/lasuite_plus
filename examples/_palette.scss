@@ -1,0 +1,49 @@
+@use 'sass:map';
+@use 'sass:color';
+
+$theme: () !default;
+$bw: false !default;
+
+$theme: map.merge((
+    "primary": #A1C51B,
+    "secondary": #08508A,
+    "tertiary": #e68a00,
+    "quaternary": lime,
+    "neutral": #777,
+    "palettee": #199fd9,
+    "palettef": #ff3399,
+), $theme);
+
+$mods: (
+    "dark": -20%,
+    "darker": -40%,
+    "darkest": -60%,
+    "light": 20%,
+    "lighter": 40%,
+    "lightest": 60%,
+);
+
+$snames: "primary" "secondary" "tertiary" "quaternary" "neutral";
+
+$themen: ();
+
+@each $name in $snames {
+    @each $n, $m in $mods {
+        $themen: map.set($themen, "#{$name}-#{$n}", color.scale(map.get($theme, $name), $lightness: $m));
+    }
+}
+
+$theme: map.merge($themen, $theme);
+
+@if $bw {
+  $themebw: ();
+  @each $name, $col in $theme {
+    $themebw: map.set($themebw, $name, color.grayscale(map.get($theme, $name)));
+  }
+  $theme : $themebw;
+}
+
+@each $name,$col in $theme {
+    :root { --#{$name}: #{$col}; }
+}
+

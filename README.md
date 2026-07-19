@@ -45,21 +45,32 @@ sender: MIV
 Le titre est une métadonnée particulière. Celui-ci n'est pas lu depuis le bloc Yaml mais depuis le titre du document lui-même. Après cela il est considéré comme toutes les autres métadonnées, avec le nom "title".
 
 ### Création d'un sommaire
-Une table des matières incluant les titres de niveau 1 et 2 est produite et insérée en début de document, avec le titre « Sommaire » ; cette table est automatiquement affichée sauf si le modèle prévoit de la désactiver au moyen de `div#toc-chapter {display: none}`.
+Une table des matières incluant les titres de niveau 1 et 2 est produite et insérée en début de document, uniquement si le modèle HTML contient une `div` avec l'id `toc-chapter` (`div id="toc-chapter"></div>`). La section est peuplée avec la table des matières générée à partir des titres détectés dans le document. Le titre « Sommaire » y est rajouté.
 
-La table des matières est insérée en début de document HTML résultant, juste après l'[extrait de code HTML provenant du modèle](#insertion-de-code-html).
-
-Elle est insérée par le code suivant, qui peut être configuré en CSS :
+Le code de la table des matières est du type suivant et peut être configuré en CSS :
 ```html
 <div id="toc-chapter">
 	<h2>Sommaire</h2>
-	<div id="toc">
+	<ul id="toc">
 		<!-- Ici la table des matières -->
+		<li class="toc-h2">
+			<a href="mon-titre"><span class="titre-texte">Mon titre</span></a>
+			<span class="page-num" data-target="mon-titre"></span>
+		</li>
 	</div>
 </div>
 ```
 
+Le numéro de page doit être inséré en CSS si désiré comme ci-dessous. (Il est aussi possible de faire un sommaire sans numéro de page.)
+```css
+#toc li .page-num::after {
+  content: target-counter(attr(data-target url), page);
+}
+```
+
 Des identifiants sont créés pour chaque titre de niveau 1 et 2 pour rendre la table des matières interactive. Ainsi, en cliquant sur une entrée de la table, le navigateur pointe sur le chapitre correspondant.
+
+Certains modèles fournis en exemple présentent des styles possibles pour la table des matières.
 
 ### Insertion de code HTML
 Un extrait de code HTML paramétré dans le modèle peut être inséré en début du document résultant. Celui-ci peut contenir des variables de métadonnées, qui doivent alors être écrites sous la forme `${meta}`, avec `meta` le nom de la métadonnée correspondante. L'extension substitue la valeur des variables à cet extrait de code.
@@ -69,13 +80,11 @@ L'extension s'appuie sur [Paged.js](https://pagedjs.org/) pour transformer le co
 
 L'extension produit un « aperçu avant impression » directement dans le navigateur. En utilisant la fonctionnalité "Imprimer" du navigateur, le document peut être imprimé directement ou converti en PDF.
 
-Enfin elle ajoute à la page d'aperçu (en haut à gauche) un sélecteur de modèle qui permet de passer rapidement d'un modèle à un autre sur le même document. La liste déroulante permet de choisir entre tous les modèles pré-paramétrés. L'affichage est rafraîchi automatiquement au changement de modèle.
-
 ## Utilisation
 
-L'extension ne fonctionne que lorsqu'un document de l'outil Docs de la Suite numérique est affiché dans l'onglet courant. L'icône de l'extension, si elle est épinglée dans la barre d'outils, change alors de couleur pour montrer que l'extension est prête à traiter le document.
+L'extension ne fonctionne que lorsqu'un document de l'outil Docs de la Suite numérique est affiché dans l'onglet courant ou lorsqu'un document paginé par l'extension est affiché dans l'onglet courant. L'icône de l'extension, si elle est épinglée dans la barre d'outils, change alors de couleur pour montrer que l'extension est prête à traiter le document.
 
-La seule action possible est de cliquer sur l'icône. Le navigateur ouvre un nouvel onglet contenant le document mis en page.
+Lors du clic sur l'icône, un menu déroulant s'affiche qui contient tous les modèles enregistrés dans l'extension. Il est alors possible de cliquer sur l'un des modèles pour que le navigateur ouvre un nouvel onglet qui affiche le document paginé selon le modèle choisi.
 
 ## Paramétrage
 

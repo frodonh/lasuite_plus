@@ -170,10 +170,15 @@ function exportContent() {
 }
 
 function createToc(html) {
-	html = '<div id="toc-chapter"><h2>Sommaire</h2><div id="toc"></div></div>' + html;
+	if (!html.match(/<div\s+id="toc-chapter".*>.*<\/div>/)) return html;
 	let doc = new DOMParser().parseFromString(html, "text/html");
-	const toclist = doc.getElementById("toc");
-	if (!toclist) return html;
+	let tocsection = doc.getElementById('toc-chapter');
+	let h2 = doc.createElement('h2');
+	h2.innerHTML = "Sommaire";
+	tocsection.appendChild(h2);
+	let toclist = doc.createElement('ul');
+	toclist.id = "toc";
+	tocsection.appendChild(toclist);
 	const headings = doc.querySelectorAll('h2, h3');
 	let counter = 0;
 	headings.forEach((heading) => {
@@ -203,17 +208,20 @@ function createToc(html) {
 async function createTemplatedDocument(tabid, tname) {
 	// Create the page
 	let doc = exportContent();
-	// Create dynamic content
-	doc.html = createToc(doc.html);
-	doc.html = doc.html.replace(/\$\{([^}]*)\}/, (_match, p1, _offset, _string, _groups) => {return doc.meta[p1] || '';});
 	// Read the template and inject it in the document
 	let result = await chrome.storage.local.get(['custom_css']);
 	const templates = result['custom_css'] || {};
 	const template = templates[tname] || {};
+	// Create dynamic content
+	doc.html = template.html + doc.html;
+	doc.html = doc.html.replace(/\$\{([^}]*)\}/, (_match, p1, _offset, _string, _groups) => {return doc.meta[p1] || '';});
+	doc.html = createToc(doc.html);
+	// Inline stylesheets and scripts
 	let respa = await fetch(chrome.runtime.getURL('paged.polyfill.min.js'));
 	let paged_script = await respa.text();
 	let respc = await fetch(chrome.runtime.getURL('interface.css'));
 	let interface_css = await respc.text();
+	// Includes metadata in body data attributes to make them available in CSS stylesheets
 	let data = '';
 	for (const [key,value] of Object.entries(doc.meta)) {
 		data = data + ` data-${key}="${value}"`;
@@ -230,7 +238,6 @@ async function createTemplatedDocument(tabid, tname) {
 	<title>${doc.meta.title}</title>
 </head>
 <body${data}>
-	${template.html}
 	${doc.html}
 </body>
 </html>

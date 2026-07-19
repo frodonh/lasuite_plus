@@ -1,0 +1,249 @@
+@use "sass:map";
+@use "sass:list";
+@use "sass:meta";
+@use 'colors';
+@use 'palette';
+
+$theme: () !default;
+$bw: false !default;
+
+/*******************************/
+/*          Utilities          */
+/*******************************/
+// Copy body attributes to CSS variables so that they are inherited and accessible from the inner elements
+@mixin attrtovar($element) {
+  body[data-#{$element}] {
+    --#{$element}: attr(data-#{$element});
+  }
+}
+
+
+/*******************************/
+/*       General styling       */
+/*******************************/
+body {
+  font-family: "Spectral", serif;
+  font-size: 10pt;
+  counter-reset: h2counter footnotes;
+  text-align: justify;
+}
+
+p {
+  widows: 3;
+  orphans: 3;
+}
+
+/*******************************/
+/*          Headings           */
+/*******************************/
+h2 {
+  font-size: 1.4em;
+  font-weight: bold;
+  font-variant-caps: small-caps;
+  counter-increment: h2counter;
+  counter-reset: h3counter figcounter;
+  margin: 2em 0 0.3em 0;
+  color: map.get(palette.$theme, "primary-dark");
+
+  &::before {
+      content: counter(h2counter) " ";
+  }
+}
+
+h3 {
+  font-size: 1.2em;
+  font-weight: bold;
+  font-variant-caps: small-caps;
+  counter-increment: h3counter;
+  counter-reset: h4counter;
+  margin: 1em 0 0.3em 0;
+  color: map.get(palette.$theme, "secondary-dark");
+  &::before {
+      content: counter(h2counter) "." counter(h3counter) " ";
+  }
+}
+
+h4 {
+  font-size: 1.1em;
+  font-weight: bold;
+  counter-increment: h4counter;
+  counter-reset: h5counter;
+  margin: 0.5em 0 0.3em 0;
+  color: map.get(palette.$theme, "tertiary-dark");
+  &::before {
+      content: counter(h2counter) "." counter(h3counter,upper-latin) "." counter(h4counter) " ";
+  }
+}
+
+h5 {
+  font-size: 1em;
+  font-weight: bold;
+  counter-increment: h5counter;
+  margin: 0.5em 0 0.3em 0;
+  &::before {
+      content: counter(h5counter, alphabetic) "." ;
+  }
+}
+
+/*******************************/
+/*       Block elements        */
+/*******************************/
+table {
+	margin: 1em auto;
+	max-width: 100%;
+	border: 1px solid map.get(palette.$theme, "primary-dark");
+	border-collapse: collapse;
+	box-shadow: 5px 5px 5px map.get(palette.$theme, "primary-dark");
+
+	th,td {
+		vertical-align: middle;
+		padding: 0.2em;
+	}
+
+	tr:nth-child(even) {
+		background-color: map.get(palette.$theme, "primary-lightest");
+	}
+	
+	th {
+		background-color: map.get(palette.$theme, "primary-dark");
+		color: white;
+		font-weight: bold;
+		text-align: center;
+	}
+}
+
+.block {
+	border: 1px solid map.get(palette.$theme, "primary-dark");
+    border-radius: 4px;
+	padding: 0 0.4em;
+	box-shadow: 5px 5px 5px 2px rgba(0,0,0,0.5);
+    position: relative;
+    background-image: linear-gradient(to right, map.get(palette.$theme, "primary-lighter"), map.get(palette.$theme, "primary-lightest"));
+	& > ul {
+	  margin: 0.5em 0;
+	}
+
+    &[data-blockname] {
+      margin-top: 1em;
+      padding-top: 1em;
+    }
+}
+
+.block[data-blockname]::before {
+  content: attr(data-blockname);
+  font-weight: bold;
+  font-size: larger;
+  position: absolute;
+  top: -0.8em;
+  left: 8%;
+  border: 1px solid;
+  border-radius: 4px;
+  background-color: white;
+  padding: 0.1em 0.4em;
+}
+
+.footnote {
+	float: footnote;
+}
+
+div.appendix {
+	break-before: page;
+	color: map.get(palette.$theme, "primary");
+	text-align: center;
+	margin-bottom: 1em;
+	font-size: xx-large;
+	font-weight: bold;
+	counter-reset: h2counter;
+
+	&::before {
+		content: "Annexes";
+	}
+}
+
+::footnote-call {
+  content: counter(footnote, lower-roman);
+  color: map.get(palette.$theme, "primary");
+  line-height: 0;
+}
+
+::footnote-marker {
+  content: counter(footnote, lower-roman) ". ";
+  color: map.get(palette.$theme, "primary");
+  line-height: 0;
+}
+
+figure {
+  max-width: 100%;
+  counter-increment: figcounter;
+
+  img {
+    max-width: 100%;
+  }
+
+  div.caption {
+    text-align: center;
+    &::before {
+      font-weight: bold;
+      content: "Fig. " counter(figcounter) ". ";
+    }
+  }
+}
+
+
+/*******************************/
+/*           Lists             */
+/*******************************/
+ul:not(#toc) {
+	padding-inline-start: 1em;
+
+	li {
+		margin: 0.1em 0;
+		list-style-type: none;
+		margin-left: 2em;
+		
+		&::before {
+			width: 0.8rem;
+			padding-right: 0.2rem;
+			margin-left: -1rem;
+			color: map.get(palette.$theme, "primary-dark");
+			display: inline-block;
+			line-height: 0;
+		}
+	}
+
+	& > li::before { 
+        content: '—';
+		//content: '\0025b8';
+		//font-size: 200%;
+		//vertical-align: -0.1em;
+	}
+	& > li > ul > li::before {
+		content: '\002717';
+		font-size: inherit;
+		vertical-align: 0;
+	}
+	& > li > ul > li > ul > li::before { 
+		content: '\0025b8'; 
+		font-size: inherit;
+		vertical-align: 0;
+	}
+}
+
+ol>li::marker {
+	color: map.get(palette.$theme, "primary-dark");
+}
+
+dt {
+	font-weight: bold;
+	color: map.get(palette.$theme, "primary-dark");
+}
+
+/*******************************/
+/*     Table of contents       */
+/*******************************/
+div#toc-chapter {
+  display: none;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+}

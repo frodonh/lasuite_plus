@@ -1,0 +1,245 @@
+@use "sass:map";
+@use "sass:list";
+@use "sass:meta";
+@use 'colors';
+@use 'palette' with ($theme: colors.$theme, $bw: false);
+@use 'base' with ($theme: palette.$theme, $bw: false);
+
+// Store body attributes in CSS variables to make all elements inherit from them
+@include base.attrtovar(title);
+@include base.attrtovar(cgr);
+@include base.attrtovar(version);
+@include base.attrtovar(subtitle);
+@include base.attrtovar(date);
+@include base.attrtovar(sender);
+@include base.attrtovar(author);
+@include base.attrtovar(readers);
+@include base.attrtovar(participants);
+@include base.attrtovar(approver);
+@include base.attrtovar(recipient);
+
+/*******************************/
+/*           Header            */
+/*******************************/
+header {
+  page: couverture;
+  margin: 0;
+  height: 100%;
+
+  div.cover-page {
+    break-after: page;
+    margin: 0;
+    padding: 0;
+
+    div.front-image {
+      width: 100%;
+
+      img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      div {
+        width: 100%;
+        height: 4mm;
+        background-color: map.get(palette.$theme, "primary");
+      }
+    }
+
+    div.masthead {
+      margin: 1.5cm 3cm 0cm 5cm;
+      width: 13cm;
+      height: 9cm;
+      border-left: 4px solid map.get(palette.$theme, "secondary");
+      padding-left: 7mm;
+      display: flex;
+      flex-flow: column nowrap;
+
+      div.cgr-date {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+      }
+
+      h1 { 
+        flex: initial; 
+        font-size: 1.4em; 
+        text-align-last: start; 
+        &::before { content: var(--title); }
+      }
+    }
+
+    div.logo {
+      margin: 3cm 2cm 0 16cm;
+
+      img { max-width: 4cm;}
+    }
+  }
+
+  div.second-page {
+    page: auto;
+    display: flex;
+    flex-flow: column nowrap;
+    height: 100%;
+
+    div.preamble {
+      font-size: 1.4em;
+      font-weight: bold;
+      font-variant-caps: small-caps;
+      flex: initial;
+      margin: 2em 0 0.3em 0;
+    }
+
+    p { flex: initial; }
+    div.vspace { flex: auto;}
+  }
+}
+
+body:not([data-cgr]):not([data-version]) header div.cgr {
+  display: none;
+}
+
+body[data-cgr] header div.cgr, body[data-version] header div.cgr {
+  display: block;
+}
+
+body[data-cgr] header div.cgr::before {
+  content: "Ineris - CGR-" var(--cgr);
+}
+
+body[data-version] header div.cgr::after {
+  content: " - v" var(--version);
+}
+
+@mixin meta($element, $content, $collapse: true, $args...) {
+  body:not([data-#{$element}]) header div.#{$element} {
+    @if $collapse {
+      display: none;
+    } @else {
+      display: block;
+
+      &::before { content: " "; }
+    }
+  }
+
+  body[data-#{$element}] header div.#{$element} {
+    @each $prop, $value in meta.keywords($args) {
+      #{$prop}: $value;
+    }
+    display: block;
+
+    &::before {
+      content: $content;
+    }
+  }
+}
+
+@include meta(date, var(--date), true);
+@include meta(recipient, var(--recipient), false, $flex: initial, $margin-left: auto);
+@include meta(subtitle, var(--subtitle), false, $font-weight: bold, $font-size: 1.2em, $flex: auto, $text-align-last: start);
+@include meta(sender, "Direction en charge du rapport : " var(--sender), false);
+@include meta(author, "Rédacteurs : " var(--author), false);
+@include meta(approver, "Approbation : " var(--approver));
+
+@page couverture {
+  margin: 0;
+}
+
+/*******************************/
+/*      Inline elements        */
+/*******************************/
+strong {
+  font-weight: bold;
+  color: map.get(palette.$theme, "primary");
+}
+
+/*******************************/
+/*          Headings           */
+/*******************************/
+h2 {
+  break-before: right;
+}
+
+/*******************************/
+/*     Table of contents       */
+/*******************************/
+div#toc-chapter {
+  display: block;
+}
+
+#toc {
+  list-style: none;
+  padding: 0;
+}
+
+#toc li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+#toc li.toc-h2 {
+  font-weight: bold;
+  margin-top: 14px;
+}
+#toc li.toc-h3 {
+  padding-left: 24px;
+  font-size: 0.95em;
+  color: #444;
+}
+
+#toc li a {
+  display: flex;
+  flex-grow: 1;
+  align-items: flex-end;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+#toc li .titre-texte {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#toc li a::after {
+  content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ";
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: clip;
+  padding-left: 8px;
+  color: #aaa;
+  font-weight: normal;
+}
+
+#toc li .page-num {
+  font-weight: bold;
+  padding-left: 12px;
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 30px;
+}
+
+#toc li .page-num::after {
+  content: target-counter(attr(data-target url), page);
+}
+/*******************************/
+/*         Page media          */
+/*******************************/
+@page {
+	size: A4 portrait;
+	margin-bottom: 1.5in;
+	@bottom-right {
+		height: 2cm;
+		content: counter(page) "/" counter(pages);
+		font-size: smaller;
+	}
+	@footnote {
+		float: bottom;
+	}
+}
