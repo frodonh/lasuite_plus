@@ -1,4 +1,4 @@
-chrome.runtime.onMessage.addListener((message, _sender, response) => {
+function handleMessages(message, _sender, response) {
 	if (message.action == "apply_template") {
 		( async () => {
 			let html = await createTemplatedDocument(message.tabid, message.template);
@@ -12,7 +12,10 @@ chrome.runtime.onMessage.addListener((message, _sender, response) => {
 		})();
 	}
 	return true;
-});
+}
+
+chrome.runtime.onMessage.removeListener(handleMessages);
+chrome.runtime.onMessage.addListener(handleMessages);
 
 function exportTable(element) {
 	if (!element) return "";

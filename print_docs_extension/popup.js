@@ -3,24 +3,27 @@ const docs_url = "docs.numerique.gouv.fr/docs";
 async function clicked(event) {
 	const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
 	if (!tab) return;
-	// Check if the HTML tag has a "data-printdocs" attribute. In this case, retrieves it because it points to the source tab holding the document
-	const resp = await chrome.scripting.executeScript({
-		target: {tabId: tab.id },
-		func: () => { return document.documentElement.dataset["printdocs"]; }
-	});
-	const pdid = resp?.[0]?.result;
+	let pdid = null;
 	// Check if we are on a Docs URL, or a paged document created by the extension
-	if (!tab.url || (!tab.url.includes(docs_url) && !pdid)) {
-		console.log("L'extension ne fonctionne que sur l'outil Docs de la Suite numérique.");
-		return;
+	if (!tab.url || !tab.url.includes(docs_url)) {
+		// Otherwise, check if the HTML tag has a "data-printdocs" attribute. In this case, retrieves it because it points to the source tab holding the document
+		const resp = await chrome.scripting.executeScript({
+			target: {tabId: tab.id },
+			func: () => { return document.documentElement.dataset["printdocs"]; }
+		});
+		pdid = resp?.[0]?.result;
+		if (!pdid) {
+			console.log("L'extension ne fonctionne que sur l'outil Docs de la Suite numérique.");
+			return;
+		}
 	}
 	const tname = event.target.innerHTML;
 	// On the source document, inject the content script and run the function apply_template to generate an HTML
-	await chrome.scripting.executeScript({
-		target: { tabId: tab.id },
-		files: ["content.js"]
-	});
 	if (!pdid) { // If we were on the original source document, we create a new window with the paged document
+		await chrome.scripting.executeScript({
+			target: { tabId: tab.id },
+			files: ["content.js"]
+		});
 		chrome.tabs.sendMessage(tab.id, {
 			action: "apply_template",
 			template: tname,
