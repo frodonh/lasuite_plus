@@ -1,21 +1,18 @@
-function handleMessages(message, _sender, response) {
+chrome.runtime.onMessage.addListener((message, _sender, response) => {
 	if (message.action == "apply_template") {
-		( async () => {
-			let html = await createTemplatedDocument(message.tabid, message.template);
+		createTemplatedDocument(message.tabid, message.template).then((html) => {
 			if (message.create) {
 				// Open a blob URL with the full document
 				const blob = new Blob([html], {type: 'text/html'});
 				window.open(URL.createObjectURL(blob), '_blank');
+				response(true);
 			} else {
 				response(html);
 			}
-		})();
+		});
 	}
 	return true;
-}
-
-chrome.runtime.onMessage.removeListener(handleMessages);
-chrome.runtime.onMessage.addListener(handleMessages);
+});
 
 function exportTable(element) {
 	if (!element) return "";
@@ -76,7 +73,6 @@ function exportContent() {
 	let meta = {};
 	// Get the title of the document
 	meta["title"] = [ document.querySelector('span[aria-label="Titre du document"]').innerHTML ];
-	console.log(meta);
 	// Convert the document to plain HTML
 	document.querySelectorAll("div.bn-block-content").forEach(function(it){
 		let typ = it.dataset["contentType"];

@@ -4,39 +4,159 @@
 	<meta charset="UTF-8">
 	<script src="popup.js"></script>
 	<style>
-		ul {
-		  list-style-type: none;
-		  padding: 0;
-		  margin: 0;
-		  width: 250px;
-		  background-color: #ffffff;
+		:root {
+			--bg-color: #ffffff;
+			--text-main: #1f2937;
+			--text-muted: #6b7280;
+			--text-header: #9ca3af;
+			--hover-bg: #f3f4f6;
+			--accent-color: #2563eb;
+			--border-color: #e5e7eb;
+			--radius: 8px;
 		}
-		li {
-		  margin: 4px 8px;
+
+		body {
+			margin: 0;
+			padding: 8px;
+			width: 220px;
+			font-family: Roboto, Helvetica, Arial, sans-serif;
+			background-color: var(--bg-color);
+			color: var(--text-main);
+			box-sizing: border-box;
 		}
-		li a {
-		  display: block;
-		  padding: 10px 14px;
-		  color: #2d3748;
-		  text-decoration: none;
-		  font-size: 14px;
-		  font-weight: 500;
-		  border-radius: 8px;
-		  transition: all 0.2s ease-in-out;
+
+		.popup-container {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
 		}
-		li a:hover {
-		  background-color: #f7fafc;
-		  color: #3182ce;
-		  padding-left: 18px;
+
+		.menu-section {
+			display: flex;
+			flex-direction: column;
 		}
-		li a:active {
-		  background-color: #edf2f7;
-		  transform: scale(0.98);
+
+		.section-header {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 6px;
+			padding: 6px 8px 4px 8px;
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			color: var(--text-header);
+		}
+
+		.section-icon {
+			width: 12px;
+			height: 12px;
+			stroke: var(--text-header);
+		}
+
+		.section-divider {
+			height: 1px;
+			background-color: var(--border-color);
+			margin: 2px 4px;
+		}
+
+		.menu-list {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+		}
+
+		.menu-list li {
+			margin: 2px 0;
+		}
+
+		.menu-list a {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 8px 10px;
+			color: var(--text-main);
+			text-decoration: none;
+			font-size: 13px;
+			font-weight: 500;
+			border-radius: var(--radius);
+			transition: background-color 0.15s ease, color 0.15s ease;
+		}
+
+		.menu-list a:hover {
+			background-color: var(--hover-bg);
+			color: var(--accent-color);
+		}
+
+		.menu-list a:hover .item-icon {
+			stroke: var(--accent-color);
+		}
+
+		.item-icon {
+			width: 15px;
+			height: 15px;
+			stroke: var(--text-muted);
+			transition: stroke 0.15s ease;
+			flex-shrink: 0;
+		}
+
+		#templates-list a::before {
+			content: "";
+			display: inline-block;
+			width: 15px;
+			height: 15px;
+			flex-shrink: 0;
+			background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%236b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 2 0 0 0-2 2v16a2 2 2 0 0 0 2 2h12a2 2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg>');
+			background-repeat: no-repeat;
+			background-position: center;
+			background-size: contain;
+			transition: transform 0.15s ease, filter 0.15s ease;
+		}
+
+		#templates-list a:hover::before {
+			filter: invert(32%) sepia(85%) saturate(2286%) hue-rotate(213deg) brightness(97%) contrast(92%);
+			transform: scale(1.1);
 		}
 	</style>
 </head>
 <body>
-	<ul>
-	</ul>
+	<div id="section-templates" class="menu-section">
+		<div class="section-header">
+			<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<path d="M14 2H6a2 2 2 0 0 0-2 2v16a2 2 2 0 0 0 2 2h12a2 2 2 0 0 0 2-2V8z"></path>
+				<polyline points="14 2 14 8 20 8"></polyline>
+				<line x1="16" y1="13" x2="8" y2="13"></line>
+				<line x1="16" y1="17" x2="8" y2="17"></line>
+			</svg>
+			<span>Modèles</span>
+		</div>
+		<ul id="templates-list" class="menu-list">
+		</ul>
+	</div>
+	<div class="section-divider"></div>
+	<div id="section-actions" class="menu-section">
+		<div class="section-header">
+			<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+				<polyline points="2 17 12 22 22 17"></polyline>
+				<polyline points="2 12 12 17 22 12"></polyline>
+			</svg>
+			<span>Actions</span>
+		</div>
+		<ul class="menu-list">
+		<li>
+			<a href="#" id="action-pdf">
+				<svg class="item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M14 2H6a2 2 2 0 0 0-2 2v16a2 2 2 0 0 0 2 2h12a2 2 2 0 0 0 2-2V8z"></path>
+					<polyline points="14 2 14 8 20 8"></polyline>
+					<path d="M12 18v-6"></path>
+					<path d="m9 15 3 3 3-3"></path>
+				</svg>
+				<span>Créer un PDF</span>
+			</a>
+		</li>
+		</ul>
+	</div>
 </body>
 </html>

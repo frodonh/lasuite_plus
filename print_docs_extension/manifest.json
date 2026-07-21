@@ -13,16 +13,22 @@
 		"default_popup": "popup.htm"
 	},
 	"options_page": "select_css.html",
-	"permissions": ["storage", "activeTab", "scripting", "unlimitedStorage", "tabs"],
+	"permissions": ["storage", "activeTab", "scripting", "unlimitedStorage", "tabs", "downloads"],
 	"host_permissions": ["*://docs.numerique.gouv.fr/docs/*"],
 	"background": {
 		"service_worker": "background.js",
 		"scripts": ["background.js"],
 		"type": "module"
 	},
+	"content_scripts": [
+		{
+			"matches": ["https://docs.numerique.gouv.fr/docs/*"],
+			"js": ["content.js"]
+		}
+	],
 	"web_accessible_resources": [
 		{ 
-			"resources": ["paged.polyfill.min.js", "interface.css", "base_templates.json"],
+			"resources": ["paged.polyfill.min.js", "interface.css", "base_templates.json", "content-paged.js"],
 			"matches": ["<all_urls>"]
 		} 
 	]
